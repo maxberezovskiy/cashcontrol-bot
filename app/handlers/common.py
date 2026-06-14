@@ -38,7 +38,7 @@ async def _do_link(message: Message, code: str) -> None:
     try:
         user = await client.link(code=code, telegram_id=telegram_id)
     except ApiError as e:
-        await message.answer(f"❌ {e.message}\n\n{LINK_HINT}")
+        await message.answer(f"❌ {esc(e.message)}\n\n{LINK_HINT}")
         return
     name = esc(user.get("full_name") or user.get("email") or "пользователь")
     await message.answer(
@@ -86,7 +86,7 @@ async def unlink_command(message: Message) -> None:
         await message.answer("Аккаунт и так не привязан.")
         return
     except ApiError as e:
-        await message.answer(f"❌ {e.message}")
+        await message.answer(f"❌ {esc(e.message)}")
         return
     await message.answer("✅ Аккаунт отвязан. Чтобы снова пользоваться ботом, выполните /link.")
 

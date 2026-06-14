@@ -95,8 +95,9 @@ class CashControlClient:
         if resp.status_code >= 400:
             raise ApiError(_extract_detail(resp, "Ошибка авторизации"), resp.status_code)
         access = resp.json()["access_token"]
-        # Кэшируем на 30 минут (access живёт сутки на backend — запас большой)
-        self._tokens[telegram_id] = _Token(access_token=access, expires_at=time.time() + 30 * 60)
+        # Короткий кэш (60с): после веб-/unlink бот перестаёт действовать в пределах минуты,
+        # т.к. перезапрос /telegram/token вернёт 404. Backend-токен тоже короткоживущий.
+        self._tokens[telegram_id] = _Token(access_token=access, expires_at=time.time() + 60)
         return access
 
     async def _token(self, telegram_id: int, *, force: bool = False) -> str:

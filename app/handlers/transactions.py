@@ -11,7 +11,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from app.api_client import ApiError, NotLinkedError, client
-from app.formatting import money, transaction_line
+from app.formatting import esc, money, transaction_line
 from app.keyboards import (
     accounts_kb,
     categories_kb,
@@ -55,7 +55,7 @@ async def _show_last(message: Message) -> None:
         await message.answer(NOT_LINKED)
         return
     except ApiError as e:
-        await message.answer(f"❌ {e.message}")
+        await message.answer(f"❌ {esc(e.message)}")
         return
 
     if not transactions:
@@ -114,6 +114,9 @@ async def cancel_add(callback: CallbackQuery, state: FSMContext) -> None:
 @router.callback_query(AddTransaction.choosing_type, F.data.startswith("txtype:"))
 async def choose_type(callback: CallbackQuery, state: FSMContext) -> None:
     tx_type = callback.data.split(":", 1)[1]
+    if tx_type not in {"expense", "income"}:
+        await callback.answer("Неверный тип операции")
+        return
     await state.update_data(transaction_type=tx_type)
     await state.set_state(AddTransaction.entering_amount)
     await callback.message.edit_text(
@@ -136,7 +139,7 @@ async def enter_amount(message: Message, state: FSMContext) -> None:
         accounts = await client.get_accounts(tg_id)
     except ApiError as e:
         await state.clear()
-        await message.answer(f"❌ {e.message}")
+        await message.answer(f"❌ {esc(e.message)}")
         return
 
     if not accounts:
@@ -223,7 +226,7 @@ async def _finish(
     try:
         tx = await client.create_transaction(tg_id, payload)
     except ApiError as e:
-        error = f"❌ {e.message}"
+        error = f"❌ {esc(e.message)}"
         if via_callback:
             await message.edit_text(error)
         else:

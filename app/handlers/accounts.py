@@ -30,7 +30,7 @@ async def _show_balance(message: Message) -> None:
         await message.answer(NOT_LINKED)
         return
     except ApiError as e:
-        await message.answer(f"❌ {e.message}")
+        await message.answer(f"❌ {esc(e.message)}")
         return
 
     if not accounts:
@@ -65,7 +65,7 @@ async def _show_accounts(message: Message) -> None:
         await message.answer(NOT_LINKED)
         return
     except ApiError as e:
-        await message.answer(f"❌ {e.message}")
+        await message.answer(f"❌ {esc(e.message)}")
         return
 
     if not accounts:
